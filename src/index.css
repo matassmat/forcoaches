@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Kryptis: trenerio treniruočių žurnalas ant molio tako.
+ * Šilti popieriaus neutralai, vienas molio oranžinis akcentas, ramus
+ * apvalkalas. Spalva ir detalės skiriamos turiniui: grafikui, kalendoriui,
+ * serijų langeliams. Visa kita tyli.
+ */
+
+@layer base {
+  :root {
+    /* Šviesi tema: šiltas popierius */
+    --background: 40 20% 96%;
+    --foreground: 33 17% 10%;
+    --card: 40 30% 99%;
+    --card-foreground: 33 17% 10%;
+    --popover: 40 30% 99%;
+    --popover-foreground: 33 17% 10%;
+    --sidebar: 40 18% 93%;
+
+    /* Pakeltas paviršius: aktyvi eilutė, įvesties laukas, žyma */
+    --muted: 38 16% 91%;
+    --secondary: 38 16% 91%;
+    --secondary-foreground: 33 17% 10%;
+    --accent: 38 16% 91%;
+    --accent-foreground: 33 17% 10%;
+
+    /* Antrinis tekstas. Trečiam vaidmeniui naudojamas jo permatomumas. */
+    --muted-foreground: 33 10% 36%;
+
+    /* Plaukelio linija: teksto spalva maždaug 10 % */
+    --border: 36 14% 86%;
+    --input: 36 14% 84%;
+
+    /* Vienintelis akcentas: molio tako oranžinė. Baltas tekstas ant jos 5:1. */
+    --primary: 14 75% 44%;
+    --primary-foreground: 40 30% 99%;
+    --ring: 14 75% 44%;
+
+    /* Prasminės spalvos, prislopintos, kad tilptų į paletę */
+    --positive: 150 45% 30%;
+    --warning: 35 80% 36%;
+    --destructive: 2 65% 46%;
+    --destructive-foreground: 40 30% 99%;
+
+    /* Antra duomenų serija grafikuose: neutralus žingsnis, ne antra spalva */
+    --data: 34 9% 58%;
+
+    --radius: 0.75rem;
+
+    /* Viena kreivė ir kelios trukmės visai sąsajai */
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-fast: 150ms;
+    --dur-enter: 320ms;
+    --dur-exit: 180ms;
+  }
+
+  .dark {
+    --background: 40 7% 8%;
+    --foreground: 39 30% 90%;
+    --card: 30 8% 10%;
+    --card-foreground: 39 30% 90%;
+    --popover: 30 8% 10%;
+    --popover-foreground: 39 30% 90%;
+    --sidebar: 40 9% 6%;
+
+    --muted: 36 7% 14%;
+    --secondary: 36 7% 14%;
+    --secondary-foreground: 39 30% 90%;
+    --accent: 36 7% 14%;
+    --accent-foreground: 39 30% 90%;
+
+    --muted-foreground: 37 10% 63%;
+
+    --border: 36 6% 17%;
+    --input: 36 6% 20%;
+
+    /* Tamsoje akcentas šviesesnis, tekstas ant jo tamsus (5.5:1). */
+    --primary: 14 79% 57%;
+    --primary-foreground: 40 9% 6%;
+    --ring: 14 79% 57%;
+
+    --positive: 151 50% 53%;
+    --warning: 38 85% 58%;
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 40 9% 6%;
+
+    --data: 37 8% 46%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Slenkant prie skyriaus, antraštė nelieka po prilipusia juosta. */
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Hierarchija kuriama dydžiu ir spalva, ne storiu. */
+  h1, h2, h3, h4 {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  /* Viena linijos storio reikšmė visoms ikonoms. */
+  svg.lucide {
+    stroke-width: 1.5;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.2);
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--foreground) / 0.14);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground) / 0.24);
+    background-clip: content-box;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--card)) inset;
+    -webkit-text-fill-color: hsl(var(--foreground));
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+@layer components {
+  /* Pradinio puslapio antraštė. Tik čia leidžiamas sutrauktas tarpas. */
+  .display-xl {
+    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+  }
+
+  .display-lg {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  /* Maža etiketė virš reikšmės ar grupės. Įprastos raidės, be tarpų. */
+  .eyebrow {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Skaičiai vienodo pločio, kad stulpeliai nešokinėtų. Šriftas tas pats. */
+  .mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Tikras lygiaplotis šriftas tik kodams, kuriuos žmogus perrašo ranka. */
+  .code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  /* Kortelė: pakeltas paviršius ir plaukelio linija. Gylis be šešėlių. */
+  .panel {
+    position: relative;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.875rem;
+  }
+}
+
+@layer utilities {
+  /* Paspaudimas: mažytis susitraukimas. Užvedus keičiasi tik spalva. */
+  .btn-lift {
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease),
+      transform var(--dur-fast) var(--ease);
+  }
+  .btn-lift:active:not(:disabled) { transform: scale(0.98); }
+
+  /* Paspaudžiama kortelė: užvedus ryškesnė linija, niekas nejuda. */
+  .card-lift {
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+  .card-lift:hover {
+    border-color: hsl(var(--foreground) / 0.22);
+  }
+
+  .link-underline {
+    text-underline-offset: 4px;
+    transition: color var(--dur-fast) var(--ease);
+  }
+  .link-underline:hover { text-decoration: underline; }
+}
+
+@keyframes fc-spin { to { transform: rotate(360deg); } }
+.anim-spin { animation: fc-spin 0.7s linear infinite; }
+
+/* Krovimo būsena. Vienintelis kartojamas judesys, nes čia tikrai kažkas vyksta. */
+@keyframes fc-shimmer { 100% { transform: translateX(100%); } }
+.anim-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.05), transparent);
+  animation: fc-shimmer 1.6s var(--ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .anim-shimmer::after { animation: none; }
+  .btn-lift, .card-lift, .link-underline { transition-duration: 0.01ms; }
+  .btn-lift:active:not(:disabled) { transform: none; }
+}
