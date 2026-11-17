@@ -6,6 +6,7 @@ import { updateExercise } from '@/lib/programs'
 import { enter } from '@/lib/motion'
 import { Input } from '@/components/ui/input'
 import type { ProgramExercise } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 /**
  * Pratimo eilutė programoje. Serijos, kartojimai, svoris ir poilsis
@@ -65,7 +66,7 @@ export function ProgramExerciseRow({
       setSaved(true)
       setTimeout(() => setSaved(false), 1200)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(e, 'Nepavyko išsaugoti'))
     }
   }
 

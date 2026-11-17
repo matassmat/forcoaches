@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import type { AthleteProfile } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 // recharts kraunamas tik atidarius finansus.
 const FinanceCharts = lazy(() =>
@@ -43,7 +44,7 @@ export function CoachFinances() {
       setRecords(recordList)
       setAthletes(athleteList)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti finansų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti finansų'))
     } finally {
       setLoading(false)
     }
@@ -66,7 +67,7 @@ export function CoachFinances() {
       await deleteRecord(id)
     } catch (e) {
       setRecords(previous)
-      toast.error(e instanceof Error ? e.message : 'Nepavyko ištrinti')
+      toast.error(errorMessage(e, 'Nepavyko ištrinti'))
     }
   }
 
@@ -282,7 +283,7 @@ function AddRecordDialog({
       toast.success(type === 'credit' ? 'Mokėjimas užregistruotas' : 'Priskaičiavimas pridėtas')
       await onAdded()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(err, 'Nepavyko išsaugoti'))
     } finally {
       setSaving(false)
     }

@@ -307,3 +307,21 @@ export function sumMacros(entries: { kcal: number; proteinG?: number | null; car
     { kcal: 0, protein: 0, carbs: 0, fat: 0 }
   )
 }
+
+export async function updateMealPlanTargets(id: string, targets: {
+  targetKcal: number | null
+  targetProteinG: number | null
+  targetCarbsG: number | null
+  targetFatG: number | null
+}): Promise<void> {
+  const { error } = await supabase
+    .from('meal_plans')
+    .update({
+      target_kcal: targets.targetKcal,
+      target_protein_g: targets.targetProteinG,
+      target_carbs_g: targets.targetCarbsG,
+      target_fat_g: targets.targetFatG,
+    })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+}

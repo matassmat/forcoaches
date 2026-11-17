@@ -20,6 +20,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { errorMessage } from '@/lib/errors'
 
 /**
  * Rezervacijos, tik sportininkų prašymai ir patvirtintos treniruotės,
@@ -45,7 +46,7 @@ export function CoachBookings() {
       setBookings(list)
       if (profile) setDefaultPrice(profile.defaultSessionPrice)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti prašymų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti prašymų'))
     } finally {
       setLoading(false)
     }
@@ -84,7 +85,7 @@ export function CoachBookings() {
       toast.success('Treniruotė patvirtinta')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko patvirtinti')
+      toast.error(errorMessage(e, 'Nepavyko patvirtinti'))
     } finally {
       setProcessing(null)
     }
@@ -121,7 +122,7 @@ export function CoachBookings() {
       toast.success('Prašymas atmestas')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko atmesti')
+      toast.error(errorMessage(e, 'Nepavyko atmesti'))
     } finally {
       setProcessing(null)
     }
@@ -150,7 +151,7 @@ export function CoachBookings() {
       toast.success(status === 'completed' ? 'Treniruotė uždaryta' : 'Pažymėta kaip neatvyko')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko pakeisti')
+      toast.error(errorMessage(e, 'Nepavyko pakeisti'))
     } finally {
       setProcessing(null)
     }

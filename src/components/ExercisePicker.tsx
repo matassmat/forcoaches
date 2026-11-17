@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { easeOutQuint } from '@/lib/motion'
 import { cn } from '@/lib/utils'
+import { errorMessage } from '@/lib/errors'
 
 /**
  * Pratimų paieška su nuotraukomis. Paspaudus pratimą pirma parodoma, kaip jį
@@ -30,7 +31,7 @@ export function ExercisePicker({
   const [preview, setPreview] = useState<Exercise | null>(null)
 
   useEffect(() => {
-    loadExercises().then(setAll).catch((e) => setError(e instanceof Error ? e.message : 'Klaida'))
+    loadExercises().then(setAll).catch((e) => setError(errorMessage(e, 'Klaida')))
   }, [])
 
   const results = useMemo(

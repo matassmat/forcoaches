@@ -1,3 +1,4 @@
+import { errorMessage } from '@/lib/errors'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { AlertTriangle, RotateCw } from 'lucide-react'
 
@@ -36,7 +37,7 @@ export class ErrorBoundary extends Component<
           </p>
 
           <pre className="mono mt-5 max-h-40 overflow-auto rounded-md border border-border bg-muted/50 p-3 text-left text-xs text-muted-foreground">
-            {error.message}
+            {errorMessage(error, 'Puslapyje įvyko netikėta klaida.')}
           </pre>
 
           <div className="mt-6 flex justify-center gap-2">

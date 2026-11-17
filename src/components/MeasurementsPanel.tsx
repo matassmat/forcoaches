@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn, formatNum } from '@/lib/utils'
 import type { Measurement } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 // recharts yra ~105 kB gzip. Jis atsisiunčiamas tik atidarius progresą,
 // o ne kraunant pradinį puslapį.
@@ -39,7 +40,7 @@ export function MeasurementsPanel({ athleteId, canEdit = true }: { athleteId: st
     try {
       setMeasurements(await listMeasurements(athleteId))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti matavimų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti matavimų'))
     } finally {
       setLoading(false)
     }
@@ -54,7 +55,7 @@ export function MeasurementsPanel({ athleteId, canEdit = true }: { athleteId: st
       await deleteMeasurement(id)
     } catch (e) {
       setMeasurements(previous)
-      toast.error(e instanceof Error ? e.message : 'Nepavyko ištrinti')
+      toast.error(errorMessage(e, 'Nepavyko ištrinti'))
     }
   }
 
@@ -250,7 +251,7 @@ function MeasurementDialog({
       setValues({})
       toast.success('Matavimas išsaugotas')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(e, 'Nepavyko išsaugoti'))
     } finally {
       setSaving(false)
     }

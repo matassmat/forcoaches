@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
+import { errorMessage } from '@/lib/errors'
 
 export function CoachSettings() {
   const { user } = useAuth()
@@ -32,7 +33,7 @@ export function CoachSettings() {
         setCancelHours(String(profile.cancellationHoursBefore))
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti nustatymų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti nustatymų'))
     } finally {
       setLoading(false)
     }
@@ -63,7 +64,7 @@ export function CoachSettings() {
       })
       toast.success('Nustatymai išsaugoti')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(err, 'Nepavyko išsaugoti'))
     } finally {
       setSaving(false)
     }
@@ -78,7 +79,7 @@ export function CoachSettings() {
       if (error) throw error
       toast.success('Slaptažodžio keitimo nuoroda išsiųsta į el. paštą')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko išsiųsti nuorodos')
+      toast.error(errorMessage(err, 'Nepavyko išsiųsti nuorodos'))
     }
   }
 

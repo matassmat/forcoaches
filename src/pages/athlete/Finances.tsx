@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { errorMessage } from '@/lib/errors'
 
 /** Sportininkas mato tik savo įrašus, nieko nekeičia, tik žino, kiek skolingas. */
 export function AthleteFinances() {
@@ -23,7 +24,7 @@ export function AthleteFinances() {
     try {
       setRecords(await listAthleteRecords(athlete.id))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti atsiskaitymų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti atsiskaitymų'))
     } finally {
       setLoading(false)
     }

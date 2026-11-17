@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { easeOutQuint } from '@/lib/motion'
 import { cn } from '@/lib/utils'
+import { errorMessage } from '@/lib/errors'
 
 export interface PickedMeal {
   title: string
@@ -46,7 +47,7 @@ export function RecipePicker({ onPick }: { onPick: (meal: PickedMeal) => Promise
       } catch (e) {
         if (!cancelled) {
           setResults([])
-          toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti receptų')
+          toast.error(errorMessage(e, 'Nepavyko įkelti receptų'))
         }
       }
     }
@@ -62,7 +63,7 @@ export function RecipePicker({ onPick }: { onPick: (meal: PickedMeal) => Promise
     try {
       setDetail(await getRecipe(recipe.id))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti recepto')
+      toast.error(errorMessage(e, 'Nepavyko įkelti recepto'))
     } finally {
       setLoadingDetail(false)
     }

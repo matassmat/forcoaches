@@ -8,6 +8,7 @@
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY — jie egzistuoja automatiškai
  *   RESEND_API_KEY                          — https://resend.com
  *   REMINDER_FROM                           — pvz. "ForCoaches <treniruotes@jusu-domenas.lt>"
+ *   CRON_SECRET                             — atsitiktinė eilutė, ta pati Cron užklausos antraštėje x-cron-secret
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -31,6 +32,13 @@ interface BookingRow {
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
+  }
+
+  // Funkciją kviečia tik Supabase Cron su slaptu raktu antraštėje. Be jo bet
+  // kas, žinantis adresą, galėtų ją paleidinėti ir siuntinėti laiškus.
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  if (!cronSecret || req.headers.get('x-cron-secret') !== cronSecret) {
+    return json({ error: 'Neleidžiama' }, 401)
   }
 
   const resendKey = Deno.env.get('RESEND_API_KEY')

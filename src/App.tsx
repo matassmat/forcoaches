@@ -1,6 +1,7 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
-import { Toaster } from 'sonner'
+import { toast, Toaster } from 'sonner'
 import {
   CalendarCheck, CalendarDays, ClipboardList, Coins, LayoutDashboard, LineChart, Salad, Settings, Users,
 } from 'lucide-react'
@@ -8,13 +9,23 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { AppShell, type NavItem } from '@/components/AppShell'
 import { ConfigWarning } from '@/components/ConfigWarning'
+import { CookieConsent } from '@/components/CookieConsent'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { FullPageSpinner } from '@/components/FullPageSpinner'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { homePathForRole } from '@/lib/routes'
+import { trackPageView } from '@/lib/analytics'
+import { errorMessage } from '@/lib/errors'
+import { SITE } from '@/lib/site'
 import { Landing } from '@/pages/Landing'
 import { Login } from '@/pages/Login'
 import { SignUp } from '@/pages/SignUp'
+import { ForgotPassword, ResetPassword } from '@/pages/PasswordReset'
+import { NotFound } from '@/pages/site/NotFound'
+import { ThankYou } from '@/pages/site/ThankYou'
+import { Contact } from '@/pages/site/Contact'
+import { Privacy } from '@/pages/site/Privacy'
+import { CaseStudies, CaseStudyPage } from '@/pages/site/CaseStudies'
 import { CoachOverview } from '@/pages/coach/Overview'
 import { CoachAthletes } from '@/pages/coach/Athletes'
 import { CoachBookings } from '@/pages/coach/Bookings'
@@ -62,6 +73,49 @@ function RootRoute() {
   return <Landing />
 }
 
+/**
+ * Kas vyksta keičiantis maršrutui: slinktis į viršų arba prie #skyriaus,
+ * analitikos puslapio peržiūra ir programos vidaus puslapių pavadinimai.
+ */
+function RouteEffects() {
+  const { pathname, hash } = useLocation()
+
+  useEffect(() => {
+    if (hash) {
+      // Palaukiame, kol puslapis nupieštas, tada slenkame prie skyriaus.
+      const id = decodeURIComponent(hash.slice(1))
+      const t = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 60)
+      return () => clearTimeout(t)
+    }
+    window.scrollTo(0, 0)
+  }, [pathname, hash])
+
+  useEffect(() => {
+    const item = [...coachNav, ...athleteNav].find((n) => n.to === pathname)
+    if (item) {
+      const area = pathname.startsWith('/treneris') ? 'Treneris' : 'Sportininkas'
+      document.title = `${item.label} · ${area} | ${SITE.name}`
+      document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex, nofollow')
+    }
+    // Pavadinimą puslapis nustato per useSeo, todėl peržiūra siunčiama po jo.
+    const t = window.setTimeout(() => trackPageView(pathname), 0)
+    return () => clearTimeout(t)
+  }, [pathname])
+
+  // Paskutinė apsauga: bet kuri nepagauta asinchroninė klaida parodoma
+  // žmogui lietuviškai, o ne tyliai dingsta konsolėje.
+  useEffect(() => {
+    const onRejection = (event: PromiseRejectionEvent) => {
+      console.error(event.reason)
+      toast.error(errorMessage(event.reason, 'Veiksmas nepavyko. Bandykite dar kartą.'))
+    }
+    window.addEventListener('unhandledrejection', onRejection)
+    return () => window.removeEventListener('unhandledrejection', onRejection)
+  }, [])
+
+  return null
+}
+
 /** Sonner nežino apie mūsų temą, todėl ją reikia paduoti atskirai. */
 function ThemedToaster() {
   const { theme } = useTheme()
@@ -79,10 +133,19 @@ export default function App() {
       <AuthProvider>
         <ThemedToaster />
         <ConfigWarning />
+        <RouteEffects />
+        <CookieConsent />
         <Routes>
           <Route path="/" element={<RootRoute />} />
           <Route path="/prisijungti" element={<Login />} />
           <Route path="/registracija" element={<SignUp />} />
+          <Route path="/slaptazodis" element={<ForgotPassword />} />
+          <Route path="/naujas-slaptazodis" element={<ResetPassword />} />
+          <Route path="/aciu" element={<ThankYou />} />
+          <Route path="/kontaktai" element={<Contact />} />
+          <Route path="/privatumas" element={<Privacy />} />
+          <Route path="/pavyzdziai" element={<CaseStudies />} />
+          <Route path="/pavyzdziai/:slug" element={<CaseStudyPage />} />
 
           <Route
             path="/treneris"
@@ -118,7 +181,7 @@ export default function App() {
             <Route path="atsiskaitymai" element={<AthleteFinances />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
       </ThemeProvider>

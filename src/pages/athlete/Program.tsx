@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import type { ProgramExercise } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 export function AthleteProgram() {
   const { athlete, loading: contextLoading } = useAthleteContext()
@@ -37,7 +38,7 @@ export function AthleteProgram() {
       setProgram(full)
       setLogs(await listLogsForDay(athlete.id, today))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti programos')
+      toast.error(errorMessage(e, 'Nepavyko įkelti programos'))
     } finally {
       setLoading(false)
     }
@@ -90,7 +91,7 @@ export function AthleteProgram() {
       }
       setLogs(await listLogsForDay(athlete.id, today))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(e, 'Nepavyko išsaugoti'))
     }
   }
 

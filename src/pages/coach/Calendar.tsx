@@ -36,6 +36,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { todayLabel } from '@/lib/today'
 import type { AthleteProfile, BookingStatus } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 const toneForStatus: Record<BookingStatus, CalendarEvent['tone']> = {
   pending: 'pending',
@@ -133,7 +134,7 @@ export function CoachCalendar() {
         setDefaultPrice(profile.defaultSessionPrice)
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti kalendoriaus')
+      toast.error(errorMessage(e, 'Nepavyko įkelti kalendoriaus'))
     } finally {
       setLoading(false)
     }
@@ -222,7 +223,7 @@ export function CoachCalendar() {
       toast.success(count > 1 ? `Pridėta ${count} laisvų laikų` : `Laisva ${startTime}–${endTime}`)
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko pridėti')
+      toast.error(errorMessage(e, 'Nepavyko pridėti'))
     }
   }
 
@@ -240,7 +241,7 @@ export function CoachCalendar() {
       toast.success('Perkelta')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko perkelti')
+      toast.error(errorMessage(e, 'Nepavyko perkelti'))
     }
   }
 
@@ -252,7 +253,7 @@ export function CoachCalendar() {
       toast.success('Laisvi laikai sutvarkyti')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko sutvarkyti')
+      toast.error(errorMessage(e, 'Nepavyko sutvarkyti'))
     }
   }
 
@@ -392,6 +393,28 @@ export function CoachCalendar() {
         event={selected}
         bookings={bookings}
         onClose={() => setSelected(null)}
+        onRepeat={async (event, weeks) => {
+          if (!user) return
+          const [y, m, d] = event.date.split('-').map(Number)
+          const start = new Date(y, m - 1, d)
+          const until = new Date(start)
+          until.setDate(until.getDate() + weeks * 7)
+          try {
+            const count = await addSlots({
+              coachId: user.id,
+              date: event.date,
+              startTime: event.startTime,
+              endTime: event.endTime,
+              recurringDays: [start.getDay()],
+              until: toDateKey(until),
+            })
+            toast.success(`Laikas pakartotas ${Math.max(0, count - 1)} kart. į priekį`)
+            setSelected(null)
+            await load()
+          } catch (e) {
+            toast.error(errorMessage(e, 'Nepavyko pakartoti'))
+          }
+        }}
         onDeleteSlot={async (id) => {
           await deleteSlot(id)
           setSelected(null)
@@ -543,11 +566,12 @@ function MonthGrid({
 // ── Dialogai ──────────────────────────────────────────────────────────
 
 function EventDialog({
-  event, bookings, onClose, onDeleteSlot, onStatus, onReschedule,
+  event, bookings, onClose, onDeleteSlot, onStatus, onReschedule, onRepeat,
 }: {
   event: CalendarEvent | null
   bookings: BookingWithAthlete[]
   onClose: () => void
+  onRepeat: (event: CalendarEvent, weeks: number) => Promise<void>
   onDeleteSlot: (id: string) => Promise<void>
   onStatus: (id: string, status: BookingStatus) => Promise<void>
   onReschedule: (event: CalendarEvent, date: string, startTime: string, endTime: string) => Promise<void>
@@ -556,6 +580,7 @@ function EventDialog({
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
+  const [weeks, setWeeks] = useState(4)
 
   // Laukai atstatomi kaskart atidarius kitą bloką.
   useEffect(() => {
@@ -629,6 +654,31 @@ function EventDialog({
             Išsaugoti laiką
           </Button>
         </div>
+
+        {kind === 'slot' && (
+          <div className="space-y-3 rounded-md border border-border p-4">
+            <p className="eyebrow">Kartoti kas savaitę</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {[2, 4, 8, 12].map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => setWeeks(w)}
+                  aria-pressed={weeks === w}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-xs transition-colors duration-150',
+                    weeks === w ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {w} sav.
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" className="w-full" loading={busy} onClick={() => run(() => onRepeat(event, weeks))}>
+              Pakartoti {weeks} savaitėms į priekį
+            </Button>
+          </div>
+        )}
 
         <DialogFooter>
           {kind === 'slot' ? (

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getCoachProfileByUserId, getMyAthleteProfile } from '@/lib/coachProfile'
 import type { AthleteProfile, CoachProfile } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 /**
  * Viską, ką sportininko puslapiai daro, remiasi dviem įrašais: jo paties
@@ -23,7 +24,7 @@ export function useAthleteContext() {
       // Trenerio anketa pasiekiama tik per RLS ryšį, tad be kortelės nėra ko klausti.
       setCoach(profile ? await getCoachProfileByUserId(profile.coachId) : null)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Nepavyko įkelti duomenų')
+      setError(errorMessage(e, 'Nepavyko įkelti duomenų'))
     } finally {
       setLoading(false)
     }

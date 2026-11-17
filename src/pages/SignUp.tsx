@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { MailCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { AuthLayout } from '@/components/AuthLayout'
@@ -11,8 +10,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { enter, exit } from '@/lib/motion'
 import type { UserRole } from '@/types'
+import { errorMessage } from '@/lib/errors'
+import { trackEvent } from '@/lib/analytics'
+import { useSeo } from '@/lib/seo'
 
 export function SignUp() {
+  useSeo({ title: 'Registracija', description: 'Sukurkite ForCoaches trenerio arba sportininko paskyrą.' })
   const { signUp } = useAuth()
   const navigate = useNavigate()
   const [role, setRole] = useState<UserRole>('coach')
@@ -23,7 +26,6 @@ export function SignUp() {
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,39 +41,17 @@ export function SignUp() {
         inviteCode: role === 'athlete' ? inviteCode : undefined,
       })
       if (needsEmailConfirmation) {
-        setAwaitingConfirmation(true)
+        trackEvent('sign_up', { role })
+        navigate('/aciu', { state: { kind: 'signup', email: email.trim(), role } })
       } else {
+        trackEvent('sign_up', { role })
         navigate('/', { replace: true })
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nepavyko sukurti paskyros')
+      toast.error(errorMessage(error, 'Nepavyko sukurti paskyros'))
     } finally {
       setSubmitting(false)
     }
-  }
-
-  if (awaitingConfirmation) {
-    return (
-      <AuthLayout>
-        <div className="text-center">
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1, transition: { ...enter, delay: 0.05 } }}
-            className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-muted text-foreground"
-          >
-            <MailCheck className="h-7 w-7" />
-          </motion.div>
-          <h1 className="text-xl font-medium">Patvirtinkite el. paštą</h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Išsiuntėme nuorodą adresu <span className="font-medium text-foreground">{email}</span>.
-            Paspaudę ją, galėsite prisijungti.
-          </p>
-          <Button variant="outline" className="mt-6 w-full" onClick={() => navigate('/prisijungti')}>
-            Į prisijungimą
-          </Button>
-        </div>
-      </AuthLayout>
-    )
   }
 
   return (

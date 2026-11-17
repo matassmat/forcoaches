@@ -138,6 +138,8 @@ Paleisti iš eilės Supabase SQL Editor:
 | 6 | `20260817180000_notifications.sql` | Pranešimai su realtime |
 | 7 | `20260817200000_exercise_logs.sql` | Atliktų serijų istorija |
 | 8 | `20260817220000_reminders.sql` | Priminimų žyma |
+| 9 | `20261118120000_rate_limits.sql` | Prisijungimo, pakvietimo kodų ir įrašų kūrimo ribos |
+| 10 | `20261118130000_contact_messages.sql` | Kontaktų formos žinutės |
 
 ## Priminimai el. paštu
 
@@ -145,9 +147,21 @@ Paleisti iš eilės Supabase SQL Editor:
 Reikia:
 
 1. Resend paskyros ir patvirtinto domeno
-2. Secrets: `RESEND_API_KEY`, `REMINDER_FROM`
+2. Secrets: `RESEND_API_KEY`, `REMINDER_FROM`, `CRON_SECRET` (atsitiktinė eilutė)
 3. Įdiegimo: `npx supabase functions deploy send-reminders`
-4. Cron, kuris ją kviečia kas valandą
+4. Cron, kuris ją kviečia kas valandą su antrašte `x-cron-secret: <CRON_SECRET>`.
+   Be šios antraštės funkcija atsako 401.
+
+## Saugumas
+
+- `.env` į git nepatenka. Jame tik `VITE_` kintamieji, jie vieši ir patenka į naršyklę.
+- Slapti raktai (`service_role`, `RESEND_API_KEY`, `CRON_SECRET`) laikomi tik
+  Supabase skydelyje: Edge Functions -> Secrets.
+- Prisijungimas: 5 nesėkmės per 15 min vienam el. paštui (DB funkcijos
+  `login_attempt_status`, `record_login_failure`). Papildomai Supabase skydelyje
+  Authentication -> Rate Limits sumažinkite „Sign-ups and sign-ins“ ribą.
+- Pakvietimo kodo tikrinimas: 10 per 15 min iš vieno IP.
+- Įrašų kūrimas ribojamas trigeriais (`enforce_insert_rate`).
 
 Išsiuntimas žymimas `bookings.reminder_sent_at`, todėl tas pats laiškas
 neišeina du kartus.

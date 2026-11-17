@@ -1,17 +1,18 @@
-import { formatNum } from '@/lib/utils'
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, BookOpen, ImageOff, Pencil, Plus, Salad, Trash2, UserCheck } from 'lucide-react'
+import { Apple, ArrowLeft, BookOpen, Calculator, ImageOff, Pencil, Plus, Salad, Trash2, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { listAthletes } from '@/lib/athletes'
 import {
   addMeal, createMealPlan, deleteMeal, deleteMealPlan, getMealPlan, listMealPlans,
-  MEAL_SLOTS, MEAL_SLOT_LABELS,
+  MEAL_SLOTS, MEAL_SLOT_LABELS, sumMacros, updateMealPlanTargets,
 } from '@/lib/nutrition'
 import { enter, exit, riseItem, staggerParent } from '@/lib/motion'
 import { EmptyPanel } from '@/components/EmptyPanel'
 import { PageHeader } from '@/components/PageHeader'
+import { MacroCalculator } from '@/components/MacroCalculator'
+import { MealBuilder } from '@/components/MealBuilder'
 import { RecipePicker, type PickedMeal } from '@/components/RecipePicker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,7 +23,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { formatNum } from '@/lib/utils'
 import type { AthleteProfile, Meal, MealPlan, MealSlot } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 export function CoachNutrition() {
   const { user } = useAuth()
@@ -39,7 +42,7 @@ export function CoachNutrition() {
       setPlans(planList)
       setAthletes(athleteList)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti planų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti planų'))
     } finally {
       setLoading(false)
     }
@@ -130,12 +133,13 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
   const [plan, setPlan] = useState<(MealPlan & { meals: Meal[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null)
+  const [editTargets, setEditTargets] = useState(false)
 
   const load = useCallback(async () => {
     try {
       setPlan(await getMealPlan(planId))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti plano')
+      toast.error(errorMessage(e, 'Nepavyko įkelti plano'))
     } finally {
       setLoading(false)
     }
@@ -146,11 +150,12 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
   if (loading) return <Skeleton className="h-64 w-full" />
   if (!plan) return <EmptyPanel icon={<Salad className="h-6 w-6" />} title="Planas nerastas" text="Jis galėjo būti ištrintas." />
 
+  const planned = sumMacros(plan.meals.map((m) => ({ kcal: m.kcal ?? 0, proteinG: m.proteinG, carbsG: m.carbsG, fatG: m.fatG })))
   const targets = [
-    { label: 'Kalorijos', value: plan.targetKcal, unit: 'kcal' },
-    { label: 'Baltymai', value: plan.targetProteinG, unit: 'g' },
-    { label: 'Angliavandeniai', value: plan.targetCarbsG, unit: 'g' },
-    { label: 'Riebalai', value: plan.targetFatG, unit: 'g' },
+    { label: 'Kalorijos', value: plan.targetKcal, planned: planned.kcal, unit: 'kcal' },
+    { label: 'Baltymai', value: plan.targetProteinG, planned: planned.protein, unit: 'g' },
+    { label: 'Angliavandeniai', value: plan.targetCarbsG, planned: planned.carbs, unit: 'g' },
+    { label: 'Riebalai', value: plan.targetFatG, planned: planned.fat, unit: 'g' },
   ]
 
   return (
@@ -168,12 +173,19 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
         eyebrow={plan.isTemplate ? 'Šablonas' : 'Priskirtas planas'}
         title={plan.title}
         action={
-          <Button
-            variant="ghost"
-            onClick={async () => { await deleteMealPlan(plan.id); toast.success('Planas ištrintas'); onBack() }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setEditTargets(true)}>
+              <Calculator className="h-4 w-4" />
+              Normos
+            </Button>
+            <Button
+              variant="ghost"
+              aria-label="Ištrinti planą"
+              onClick={async () => { await deleteMealPlan(plan.id); toast.success('Planas ištrintas'); onBack() }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         }
       />
 
@@ -185,6 +197,11 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
               {target.value != null ? formatNum(target.value) : '-'}
               <span className="ml-1 text-xs font-medium text-muted-foreground">{target.unit}</span>
             </p>
+            {plan.meals.length > 0 && (
+              <p className="mono mt-2 text-xs text-muted-foreground">
+                valgiuose {formatNum(target.planned)}
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -212,7 +229,7 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
                       exit={{ opacity: 0, height: 0, transition: exit }}
                       className="group flex items-start gap-3 px-5 py-3"
                     >
-                      <MealThumb url={meal.imageUrl} />
+                      <MealThumb url={meal.imageUrl} alt={`${meal.title}, nuotrauka`} />
 
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-foreground">{meal.title}</p>
@@ -248,6 +265,13 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
         })}
       </motion.div>
 
+      <TargetsDialog
+        open={editTargets}
+        onOpenChange={setEditTargets}
+        plan={plan}
+        onSaved={load}
+      />
+
       <AddMealDialog
         slot={addSlot}
         onClose={() => setAddSlot(null)}
@@ -275,6 +299,7 @@ function CreatePlanDialog({
   const [carbs, setCarbs] = useState('')
   const [fat, setFat] = useState('')
   const [saving, setSaving] = useState(false)
+  const [calcOpen, setCalcOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -295,7 +320,7 @@ function CreatePlanDialog({
       onOpenChange(false)
       setTitle(''); setAthleteId(''); setKcal(''); setProtein(''); setCarbs(''); setFat('')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko sukurti')
+      toast.error(errorMessage(err, 'Nepavyko sukurti'))
     } finally {
       setSaving(false)
     }
@@ -303,7 +328,7 @@ function CreatePlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Naujas mitybos planas</DialogTitle>
           <DialogDescription>Normos nebūtinos, bet be jų sportininkas nematys, kiek jam liko.</DialogDescription>
@@ -331,6 +356,25 @@ function CreatePlanDialog({
               ))}
             </select>
           </div>
+
+          {calcOpen ? (
+            <MacroCalculator
+              athleteId={athleteId || null}
+              onApply={(t) => {
+                setKcal(String(t.kcal)); setProtein(String(t.protein)); setCarbs(String(t.carbs)); setFat(String(t.fat))
+                setCalcOpen(false)
+              }}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCalcOpen(true)}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            >
+              <Calculator className="h-4 w-4" />
+              Apskaičiuoti normas pagal svorį, ūgį ir tikslą
+            </button>
+          )}
 
           <div className="grid grid-cols-4 gap-2">
             <div className="space-y-2">
@@ -361,7 +405,7 @@ function CreatePlanDialog({
   )
 }
 
-function MealThumb({ url }: { url?: string | null }) {
+function MealThumb({ url, alt }: { url?: string | null; alt: string }) {
   const [failed, setFailed] = useState(false)
   if (!url || failed) {
     return (
@@ -373,7 +417,7 @@ function MealThumb({ url }: { url?: string | null }) {
   return (
     <img
       src={url}
-      alt=""
+      alt={alt}
       loading="lazy"
       onError={() => setFailed(true)}
       className="h-14 w-14 shrink-0 rounded-md object-cover"
@@ -427,7 +471,7 @@ function AddMealDialog({
     try {
       await save({ title: title.trim(), kcal: num(kcal), proteinG: num(protein), carbsG: num(carbs), fatG: num(fat) })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko pridėti')
+      toast.error(errorMessage(err, 'Nepavyko pridėti'))
     } finally {
       setSaving(false)
     }
@@ -439,21 +483,38 @@ function AddMealDialog({
         <DialogHeader>
           <DialogTitle>Pridėti valgį, {slot ? MEAL_SLOT_LABELS[slot] : ''}</DialogTitle>
           <DialogDescription>
-            Rinkitės iš receptų bibliotekos su nuotraukomis arba įrašykite savo.
+            Sudėkite iš produktų, paimkite receptą su nuotrauka arba įrašykite savo.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="library">
+        <Tabs defaultValue="builder">
           <TabsList className="mb-4">
+            <TabsTrigger value="builder">
+              <Apple className="mr-2 h-4 w-4" />
+              Iš produktų
+            </TabsTrigger>
             <TabsTrigger value="library">
               <BookOpen className="mr-2 h-4 w-4" />
-              Receptų biblioteka
+              Receptai
             </TabsTrigger>
             <TabsTrigger value="manual">
               <Pencil className="mr-2 h-4 w-4" />
               Savas
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="builder">
+            <MealBuilder
+              onSave={async (meal) => {
+                try {
+                  await save(meal)
+                  toast.success('Valgis pridėtas')
+                } catch (err) {
+                  toast.error(errorMessage(err, 'Nepavyko pridėti'))
+                }
+              }}
+            />
+          </TabsContent>
 
           <TabsContent value="library">
             <RecipePicker
@@ -462,7 +523,7 @@ function AddMealDialog({
                   await save(meal)
                   toast.success('Pridėta į valgiaraštį')
                 } catch (err) {
-                  toast.error(err instanceof Error ? err.message : 'Nepavyko pridėti')
+                  toast.error(errorMessage(err, 'Nepavyko pridėti'))
                 }
               }}
             />
@@ -501,6 +562,87 @@ function AddMealDialog({
             </form>
           </TabsContent>
         </Tabs>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function TargetsDialog({
+  open, onOpenChange, plan, onSaved,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  plan: MealPlan
+  onSaved: () => Promise<void>
+}) {
+  const str = (v?: number | null) => (v != null ? String(v) : '')
+  const [kcal, setKcal] = useState(str(plan.targetKcal))
+  const [protein, setProtein] = useState(str(plan.targetProteinG))
+  const [carbs, setCarbs] = useState(str(plan.targetCarbsG))
+  const [fat, setFat] = useState(str(plan.targetFatG))
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    setKcal(str(plan.targetKcal)); setProtein(str(plan.targetProteinG))
+    setCarbs(str(plan.targetCarbsG)); setFat(str(plan.targetFatG))
+  }, [open, plan])
+
+  const num = (v: string) => (v.trim() ? Math.round(Number(v.replace(',', '.'))) : null)
+
+  const fields = [
+    { id: 't-kcal', label: 'kcal', value: kcal, set: setKcal },
+    { id: 't-p', label: 'B, g', value: protein, set: setProtein },
+    { id: 't-c', label: 'A, g', value: carbs, set: setCarbs },
+    { id: 't-f', label: 'R, g', value: fat, set: setFat },
+  ]
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Dienos normos</DialogTitle>
+          <DialogDescription>Sportininkas mato, kiek jam liko iki šių skaičių.</DialogDescription>
+        </DialogHeader>
+
+        <form
+          className="space-y-4"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            setSaving(true)
+            try {
+              await updateMealPlanTargets(plan.id, {
+                targetKcal: num(kcal), targetProteinG: num(protein), targetCarbsG: num(carbs), targetFatG: num(fat),
+              })
+              await onSaved()
+              onOpenChange(false)
+              toast.success('Normos išsaugotos')
+            } catch (err) {
+              toast.error(errorMessage(err, 'Nepavyko išsaugoti'))
+            } finally {
+              setSaving(false)
+            }
+          }}
+        >
+          <MacroCalculator
+            athleteId={plan.athleteId}
+            onApply={(t) => { setKcal(String(t.kcal)); setProtein(String(t.protein)); setCarbs(String(t.carbs)); setFat(String(t.fat)) }}
+          />
+
+          <div className="grid grid-cols-4 gap-2">
+            {fields.map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label htmlFor={field.id}>{field.label}</Label>
+                <Input id={field.id} inputMode="numeric" className="mono" value={field.value} onChange={(e) => field.set(e.target.value)} />
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Atšaukti</Button>
+            <Button type="submit" loading={saving}>Išsaugoti</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

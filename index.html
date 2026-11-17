@@ -2,10 +2,32 @@
 <html lang="lt">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ForCoaches - asmeninių trenerių sistema</title>
-    <meta name="description" content="Rezervacijos, treniruočių programos, mityba ir atsiskaitymai asmeniniam treneriui ir jo sportininkams." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ForCoaches - rezervacijos, programos ir mityba asmeniniam treneriui</title>
+    <meta name="description" content="Laisvi laikai, rezervacijos, treniruočių programos su svoriais, mitybos planai su kalorijomis ir atsiskaitymai. Sportininkas viską mato telefone." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="%SITE_URL%" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#f6f4f1" />
+
+    <!-- Socialiniai tinklai: nuoroda Facebook, Messenger, LinkedIn ir kt. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="lt_LT" />
+    <meta property="og:site_name" content="ForCoaches" />
+    <meta property="og:title" content="ForCoaches - rezervacijos, programos ir mityba asmeniniam treneriui" />
+    <meta property="og:description" content="Laisvi laikai, rezervacijos, treniruočių programos, mitybos planai ir atsiskaitymai. Sportininkas viską mato telefone." />
+    <meta property="og:url" content="%SITE_URL%" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ForCoaches: šiandienos treniruotė su pažymėtomis serijomis" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ForCoaches - rezervacijos, programos ir mityba asmeniniam treneriui" />
+    <meta name="twitter:description" content="Laisvi laikai, rezervacijos, treniruočių programos, mitybos planai ir atsiskaitymai." />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
+
+    <!-- %JSON_LD% -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Instrument Sans visai sąsajai. JetBrains Mono tik pakvietimo kodams. -->
@@ -16,6 +38,7 @@
   </head>
 
   <body>
+    <noscript>ForCoaches veikia tik įjungus JavaScript.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { AthleteProfile, Program } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 export function AthleteDetail({
   athlete: initial,
@@ -53,7 +54,7 @@ export function AthleteDetail({
       toast.success('Sportininkas ištrintas')
       onDeleted()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko ištrinti')
+      toast.error(errorMessage(e, 'Nepavyko ištrinti'))
       setDeleting(false)
     }
   }
@@ -256,7 +257,7 @@ function EditAthleteDialog({
       onOpenChange(false)
       toast.success('Išsaugota')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko išsaugoti')
+      toast.error(errorMessage(err, 'Nepavyko išsaugoti'))
     } finally {
       setSaving(false)
     }

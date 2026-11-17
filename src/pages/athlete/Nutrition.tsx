@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn, formatNum } from '@/lib/utils'
 import type { FoodLogEntry, Meal, MealPlan, MealSlot } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 export function AthleteNutrition() {
   const { athlete, loading: contextLoading } = useAthleteContext()
@@ -41,7 +42,7 @@ export function AthleteNutrition() {
       setPlan(planData)
       setEntries(log)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti mitybos')
+      toast.error(errorMessage(e, 'Nepavyko įkelti mitybos'))
     } finally {
       setLoading(false)
     }
@@ -58,7 +59,7 @@ export function AthleteNutrition() {
       await deleteFoodLog(id)
     } catch (e) {
       setEntries(previous)
-      toast.error(e instanceof Error ? e.message : 'Nepavyko ištrinti')
+      toast.error(errorMessage(e, 'Nepavyko ištrinti'))
     }
   }
 
@@ -189,7 +190,7 @@ export function AthleteNutrition() {
                   <div className="space-y-2">
                     {planned.map((meal) => (
                       <div key={meal.id} className="flex items-center gap-3">
-                        <MealThumb url={meal.imageUrl} />
+                        <MealThumb url={meal.imageUrl} alt={`${meal.title}, nuotrauka`} />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-foreground">{meal.title}</p>
                           {meal.kcal != null && (
@@ -248,7 +249,7 @@ export function AthleteNutrition() {
   )
 }
 
-function MealThumb({ url }: { url?: string | null }) {
+function MealThumb({ url, alt }: { url?: string | null; alt: string }) {
   const [failed, setFailed] = useState(false)
   if (!url || failed) {
     return (
@@ -260,7 +261,7 @@ function MealThumb({ url }: { url?: string | null }) {
   return (
     <img
       src={url}
-      alt=""
+      alt={alt}
       loading="lazy"
       onError={() => setFailed(true)}
       className="h-11 w-11 shrink-0 rounded-md object-cover"
@@ -311,7 +312,7 @@ function AddFoodDialog({
     try {
       await submit({ title: title.trim(), kcal: Math.round(kcalNum), proteinG: num(protein), carbsG: num(carbs), fatG: num(fat) })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko pridėti')
+      toast.error(errorMessage(e, 'Nepavyko pridėti'))
     } finally {
       setSaving(false)
     }
@@ -361,14 +362,14 @@ function AddFoodDialog({
                           fatG: meal.fatG,
                         })
                       } catch (e) {
-                        toast.error(e instanceof Error ? e.message : 'Nepavyko pridėti')
+                        toast.error(errorMessage(e, 'Nepavyko pridėti'))
                       } finally {
                         setSaving(false)
                       }
                     }}
                     className="flex w-full items-center gap-3 rounded-md border border-border p-2 text-left transition-colors duration-150 hover:border-foreground/25 hover:bg-muted disabled:opacity-50"
                   >
-                    <MealThumb url={meal.imageUrl} />
+                    <MealThumb url={meal.imageUrl} alt={`${meal.title}, nuotrauka`} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-foreground">{meal.title}</span>
                       {meal.kcal != null && (
@@ -385,9 +386,12 @@ function AddFoodDialog({
             <FoodPicker
               onPick={async (food) => {
                 try {
-                  await submit(food)
+                  await submit({
+                    title: food.title, kcal: food.kcal, proteinG: food.proteinG,
+                    carbsG: food.carbsG, fatG: food.fatG, grams: food.grams,
+                  })
                 } catch (e) {
-                  toast.error(e instanceof Error ? e.message : 'Nepavyko pridėti')
+                  toast.error(errorMessage(e, 'Nepavyko pridėti'))
                 }
               }}
             />

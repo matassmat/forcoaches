@@ -165,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           // TOKEN_REFRESHED suveikia kaskart grįžus į foninę kortelę. Perkrauti
           // profilį būtų beprasmis viso medžio perpiešimas, jei paskyra ta pati.
-          if (event === 'TOKEN_REFRESHED' && loadedUserIdRef.current === session.user.id) {
+          if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && loadedUserIdRef.current === session.user.id) {
             setLoading(false)
             return
           }
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     })
-    if (authError) throw new Error(authError.message)
+    if (authError) throw authError
     if (!authData.user) throw new Error('Nepavyko sukurti paskyros')
 
     // Nėra sesijos, vadinasi, įjungtas el. pašto patvirtinimas: profilio
@@ -226,9 +226,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { needsEmailConfirmation: false }
   }
 
+  /**
+   * Prisijungimas baigiasi tik tada, kai profilis jau įkeltas. Anksčiau forma
+   * nukreipdavo į apsaugotą puslapį dar nežinodama vartotojo, tas grąžindavo
+   * atgal į prisijungimą, ir laukai atrodydavo tiesiog išsivalę.
+   */
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    if (!data.user) throw new Error('Nepavyko prisijungti. Bandykite dar kartą.')
+    await loadUser(data.user)
+    if (loadedUserIdRef.current !== data.user.id) {
+      await supabase.auth.signOut()
+      throw new Error('Paskyra rasta, bet jos profilis neįkeltas. Bandykite dar kartą po minutės arba parašykite mums.')
+    }
   }
 
   const signOut = async () => {

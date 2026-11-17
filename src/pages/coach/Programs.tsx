@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import type { AthleteProfile, Program } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 export function CoachPrograms() {
   const { user } = useAuth()
@@ -39,7 +40,7 @@ export function CoachPrograms() {
       setPrograms(programList)
       setAthletes(athleteList)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti programų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti programų'))
     } finally {
       setLoading(false)
     }
@@ -141,7 +142,7 @@ function ProgramEditor({
     try {
       setProgram(await getFullProgram(programId))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti programos')
+      toast.error(errorMessage(e, 'Nepavyko įkelti programos'))
     } finally {
       setLoading(false)
     }
@@ -157,7 +158,7 @@ function ProgramEditor({
       setDayTitle('')
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko pridėti dienos')
+      toast.error(errorMessage(err, 'Nepavyko pridėti dienos'))
     }
   }
 
@@ -175,7 +176,7 @@ function ProgramEditor({
       setPickerDay(null)
       await load()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko pridėti pratimo')
+      toast.error(errorMessage(err, 'Nepavyko pridėti pratimo'))
     }
   }
 
@@ -332,7 +333,7 @@ function CreateProgramDialog({
       onOpenChange(false)
       setTitle(''); setDescription(''); setAthleteId('')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Nepavyko sukurti')
+      toast.error(errorMessage(err, 'Nepavyko sukurti'))
     } finally {
       setSaving(false)
     }

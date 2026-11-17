@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AthleteProfile } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 const statusLabel: Record<AthleteProfile['status'], { text: string; variant: 'warning' | 'success' | 'secondary' }> = {
   invited: { text: 'Pakviestas', variant: 'warning' },
@@ -38,7 +39,7 @@ export function CoachAthletes() {
     try {
       setAthletes(await listAthletes(user.id))
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nepavyko įkelti sportininkų')
+      toast.error(errorMessage(error, 'Nepavyko įkelti sportininkų'))
     } finally {
       setLoading(false)
     }
@@ -244,7 +245,7 @@ function AddAthleteDialog({
       reset()
       toast.success(`Pakvietimo kodas ${athlete.inviteCode}`)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nepavyko sukurti')
+      toast.error(errorMessage(error, 'Nepavyko sukurti'))
     } finally {
       setSubmitting(false)
     }

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { Booking, BookingStatus } from '@/types'
+import { errorMessage } from '@/lib/errors'
 
 const statusMeta: Record<BookingStatus, { text: string; variant: 'warning' | 'success' | 'secondary' | 'destructive' }> = {
   pending: { text: 'Laukia patvirtinimo', variant: 'warning' },
@@ -55,7 +56,7 @@ export function AthleteBookings() {
         minLeadHours: 1,
       }))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko įkelti laisvų laikų')
+      toast.error(errorMessage(e, 'Nepavyko įkelti laisvų laikų'))
     } finally {
       setLoading(false)
     }
@@ -104,7 +105,7 @@ export function AthleteBookings() {
 
       toast.success('Prašymas išsiųstas treneriui')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko užsirašyti')
+      toast.error(errorMessage(e, 'Nepavyko užsirašyti'))
       await load()
     } finally {
       setBusy(null)
@@ -136,7 +137,7 @@ export function AthleteBookings() {
       toast.success('Treniruotė atšaukta')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Nepavyko atšaukti')
+      toast.error(errorMessage(e, 'Nepavyko atšaukti'))
     } finally {
       setBusy(null)
     }
