@@ -108,3 +108,60 @@ export async function unmarkSetsFrom(input: {
 
   if (error) throw new Error(error.message)
 }
+
+/** Vieno pratimo jėgos suvestinė iš visų atliktų serijų. */
+export interface StrengthSummary {
+  name: string
+  best: number
+  bestOn: string
+  first: number
+  last: number
+  sessions: number
+  /** Didžiausias svoris kiekvieną treniruočių dieną, chronologiškai. */
+  series: { date: string; weight: number }[]
+}
+
+/**
+ * Rekordai pagal pratimo pavadinimą. Tas pats pratimas gali būti keliose
+ * programose (skirtingi program_exercise_id), todėl grupuojama pagal vardą.
+ * Tik serijos su svoriu: savo svorio pratimų čia nėra ką lyginti.
+ */
+export async function listStrengthSummary(athleteId: string): Promise<StrengthSummary[]> {
+  const { data, error } = await supabase
+    .from('exercise_logs')
+    .select('performed_on, weight_kg, program_exercises(name)')
+    .eq('athlete_id', athleteId)
+    .not('weight_kg', 'is', null)
+    .order('performed_on', { ascending: true })
+    .limit(5000)
+
+  if (error) throw error
+
+  type LogRow = { performed_on: string; weight_kg: number | string; program_exercises: { name: string } | { name: string }[] | null }
+  const byName = new Map<string, Map<string, number>>()
+  for (const row of (data ?? []) as LogRow[]) {
+    const pe = Array.isArray(row.program_exercises) ? row.program_exercises[0] : row.program_exercises
+    if (!pe?.name) continue
+    const weight = Number(row.weight_kg)
+    if (!Number.isFinite(weight) || weight <= 0) continue
+    const days = byName.get(pe.name) ?? new Map<string, number>()
+    days.set(row.performed_on, Math.max(days.get(row.performed_on) ?? 0, weight))
+    byName.set(pe.name, days)
+  }
+
+  return [...byName.entries()]
+    .map(([name, days]) => {
+      const series = [...days.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([date, weight]) => ({ date, weight }))
+      const bestPoint = series.reduce((best, p) => (p.weight > best.weight ? p : best), series[0])
+      return {
+        name,
+        best: bestPoint.weight,
+        bestOn: bestPoint.date,
+        first: series[0].weight,
+        last: series[series.length - 1].weight,
+        sessions: series.length,
+        series,
+      }
+    })
+    .sort((a, b) => b.sessions - a.sessions || a.name.localeCompare(b.name, 'lt'))
+}

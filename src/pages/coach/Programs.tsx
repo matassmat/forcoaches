@@ -13,6 +13,7 @@ import { EmptyPanel } from '@/components/EmptyPanel'
 import { ExercisePicker } from '@/components/ExercisePicker'
 import { PageHeader } from '@/components/PageHeader'
 import { ProgramExerciseRow } from '@/components/ProgramExerciseRow'
+import { ExerciseInfoDialog, useExerciseCatalog } from '@/components/exercise/ExerciseInfo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -137,6 +138,8 @@ function ProgramEditor({
   const [dayTitle, setDayTitle] = useState('')
   const [pickerDay, setPickerDay] = useState<string | null>(null)
   const [assignOpen, setAssignOpen] = useState(false)
+  const [infoName, setInfoName] = useState<string | null>(null)
+  const catalog = useExerciseCatalog()
 
   const load = useCallback(async () => {
     try {
@@ -249,6 +252,8 @@ function ProgramEditor({
                     key={exercise.id}
                     index={index}
                     exercise={exercise}
+                    item={catalog.ready ? catalog.find(exercise.name) : undefined}
+                    onInfo={() => setInfoName(exercise.name)}
                     onDelete={async () => { await deleteExercise(exercise.id); await load() }}
                   />
                 ))}
@@ -282,12 +287,18 @@ function ProgramEditor({
           <DialogHeader>
             <DialogTitle>Pridėti pratimą</DialogTitle>
             <DialogDescription>
-              873 pratimai su nuotraukomis ir atlikimo aprašymu. Jei savo nerandate, įrašykite pavadinimą.
+              873 pratimai su judesiu, raumenų schema ir aprašymu. Galite sukurti ir savo pratimą su vaizdo įrašu.
             </DialogDescription>
           </DialogHeader>
           <ExercisePicker onPick={handleAddExercise} />
         </DialogContent>
       </Dialog>
+
+      <ExerciseInfoDialog
+        name={infoName}
+        item={infoName ? catalog.find(infoName) : null}
+        onClose={() => setInfoName(null)}
+      />
 
       <AssignDialog
         open={assignOpen}

@@ -325,3 +325,25 @@ export async function updateMealPlanTargets(id: string, targets: {
     .eq('id', id)
   if (error) throw new Error(error.message)
 }
+
+/** Vienos dienos įrašų kopija į kitą dieną vienu užklausimu. */
+export async function copyFoodLogDay(athleteId: string, fromDate: string, toDate: string): Promise<FoodLogEntry[]> {
+  const source = await listFoodLog(athleteId, fromDate)
+  if (source.length === 0) return []
+  const { data, error } = await supabase
+    .from('food_log_entries')
+    .insert(source.map((entry) => ({
+      athlete_id: athleteId,
+      logged_on: toDate,
+      slot: entry.slot,
+      title: entry.title,
+      kcal: entry.kcal,
+      protein_g: entry.proteinG ?? null,
+      carbs_g: entry.carbsG ?? null,
+      fat_g: entry.fatG ?? null,
+      grams: entry.grams ?? null,
+    })))
+    .select('*')
+  if (error) throw error
+  return (data as LogRow[]).map(parseLog)
+}

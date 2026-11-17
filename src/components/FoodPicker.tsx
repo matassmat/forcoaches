@@ -204,8 +204,11 @@ function PortionForm({
     setMode(next)
   }
 
+  // „1 vnt.“ x 2 = „2 vnt.“, o „riekė“ x 2 = „2 × riekė“.
+  const unitText = (count: number, label: string) =>
+    /^1\s/.test(label) ? `${formatNum(count, 1)} ${label.slice(2)}` : count === 1 ? label : `${formatNum(count, 1)} × ${label}`
   const portionText = mode === 'unit' && unit
-    ? `${formatNum(value, 1)} × ${unit.label} (${grams} g)`
+    ? `${unitText(value, unit.label)} (${grams} g)`
     : `${grams} g`
 
   return (

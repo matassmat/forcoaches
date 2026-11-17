@@ -6,6 +6,7 @@ import { updateExercise } from '@/lib/programs'
 import { enter } from '@/lib/motion'
 import { Input } from '@/components/ui/input'
 import type { ProgramExercise } from '@/types'
+import { ExerciseThumb, type AnyExercise } from '@/components/exercise/ExerciseInfo'
 import { errorMessage } from '@/lib/errors'
 
 /**
@@ -16,10 +17,15 @@ export function ProgramExerciseRow({
   exercise,
   index,
   onDelete,
+  item,
+  onInfo,
 }: {
   exercise: ProgramExercise
   index: number
   onDelete: () => Promise<void>
+  /** Pratimas iš katalogo, jei pavadinimas jame rastas. */
+  item?: AnyExercise | null
+  onInfo?: () => void
 }) {
   const [sets, setSets] = useState(String(exercise.sets))
   const [reps, setReps] = useState(exercise.reps)
@@ -77,11 +83,20 @@ export function ProgramExerciseRow({
       animate={{ opacity: 1, y: 0, transition: enter }}
       className="group grid grid-cols-[1.5rem_1fr] items-start gap-x-3 gap-y-2 px-4 py-3 sm:grid-cols-[1.5rem_minmax(0,1fr)_auto]"
     >
-      <span className="mono pt-2 text-xs text-muted-foreground">{index + 1}</span>
+      <span className="mono pt-3 text-xs text-muted-foreground">{index + 1}</span>
 
-      <span className="min-w-0 pt-1.5">
-        <span className="block truncate text-sm font-medium text-foreground">{exercise.name}</span>
-      </span>
+      <button
+        type="button"
+        onClick={onInfo}
+        className="flex min-w-0 items-center gap-3 rounded-md text-left"
+        aria-label={`${exercise.name}: kaip atlikti`}
+      >
+        <ExerciseThumb item={item ?? null} className="h-10 w-14" />
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium text-foreground">{exercise.name}</span>
+          {item === null && <span className="block text-xs text-muted-foreground">Be aprašymo</span>}
+        </span>
+      </button>
 
       {/* Laukai savo eilutėje telefone, viena eile plačiam ekrane. */}
       <div className="col-start-2 flex flex-wrap items-end gap-2 sm:col-start-3">

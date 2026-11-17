@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { toast, Toaster } from 'sonner'
@@ -20,26 +20,31 @@ import { SITE } from '@/lib/site'
 import { Landing } from '@/pages/Landing'
 import { Login } from '@/pages/Login'
 import { SignUp } from '@/pages/SignUp'
-import { ForgotPassword, ResetPassword } from '@/pages/PasswordReset'
 import { NotFound } from '@/pages/site/NotFound'
 import { ThankYou } from '@/pages/site/ThankYou'
-import { Contact } from '@/pages/site/Contact'
-import { Privacy } from '@/pages/site/Privacy'
-import { CaseStudies, CaseStudyPage } from '@/pages/site/CaseStudies'
-import { CoachOverview } from '@/pages/coach/Overview'
-import { CoachAthletes } from '@/pages/coach/Athletes'
-import { CoachBookings } from '@/pages/coach/Bookings'
-import { CoachCalendar } from '@/pages/coach/Calendar'
-import { CoachFinances } from '@/pages/coach/Finances'
-import { CoachPrograms } from '@/pages/coach/Programs'
-import { CoachNutrition } from '@/pages/coach/Nutrition'
-import { CoachSettings } from '@/pages/coach/Settings'
-import { AthleteBookings } from '@/pages/athlete/Bookings'
-import { AthleteProgress } from '@/pages/athlete/Progress'
-import { AthleteFinances } from '@/pages/athlete/Finances'
-import { AthleteProgram } from '@/pages/athlete/Program'
-import { AthleteNutrition } from '@/pages/athlete/Nutrition'
-import { AthleteOverview } from '@/pages/athlete/Overview'
+
+// Programos sritys ir antriniai puslapiai kraunami tik atidarius, kad
+// pradinis puslapis būtų lengvas.
+const CoachOverview = lazy(() => import('@/pages/coach/Overview').then((m) => ({ default: m.CoachOverview })))
+const CoachAthletes = lazy(() => import('@/pages/coach/Athletes').then((m) => ({ default: m.CoachAthletes })))
+const CoachBookings = lazy(() => import('@/pages/coach/Bookings').then((m) => ({ default: m.CoachBookings })))
+const CoachCalendar = lazy(() => import('@/pages/coach/Calendar').then((m) => ({ default: m.CoachCalendar })))
+const CoachFinances = lazy(() => import('@/pages/coach/Finances').then((m) => ({ default: m.CoachFinances })))
+const CoachPrograms = lazy(() => import('@/pages/coach/Programs').then((m) => ({ default: m.CoachPrograms })))
+const CoachNutrition = lazy(() => import('@/pages/coach/Nutrition').then((m) => ({ default: m.CoachNutrition })))
+const CoachSettings = lazy(() => import('@/pages/coach/Settings').then((m) => ({ default: m.CoachSettings })))
+const AthleteBookings = lazy(() => import('@/pages/athlete/Bookings').then((m) => ({ default: m.AthleteBookings })))
+const AthleteProgress = lazy(() => import('@/pages/athlete/Progress').then((m) => ({ default: m.AthleteProgress })))
+const AthleteFinances = lazy(() => import('@/pages/athlete/Finances').then((m) => ({ default: m.AthleteFinances })))
+const AthleteProgram = lazy(() => import('@/pages/athlete/Program').then((m) => ({ default: m.AthleteProgram })))
+const AthleteNutrition = lazy(() => import('@/pages/athlete/Nutrition').then((m) => ({ default: m.AthleteNutrition })))
+const AthleteOverview = lazy(() => import('@/pages/athlete/Overview').then((m) => ({ default: m.AthleteOverview })))
+const Privacy = lazy(() => import('@/pages/site/Privacy').then((m) => ({ default: m.Privacy })))
+const CaseStudies = lazy(() => import('@/pages/site/CaseStudies').then((m) => ({ default: m.CaseStudies })))
+const CaseStudyPage = lazy(() => import('@/pages/site/CaseStudies').then((m) => ({ default: m.CaseStudyPage })))
+const Contact = lazy(() => import('@/pages/site/Contact').then((m) => ({ default: m.Contact })))
+const ForgotPassword = lazy(() => import('@/pages/PasswordReset').then((m) => ({ default: m.ForgotPassword })))
+const ResetPassword = lazy(() => import('@/pages/PasswordReset').then((m) => ({ default: m.ResetPassword })))
 
 const coachNav: NavItem[] = [
   { to: '/treneris', label: 'Apžvalga', icon: LayoutDashboard, end: true },
@@ -135,6 +140,7 @@ export default function App() {
         <ConfigWarning />
         <RouteEffects />
         <CookieConsent />
+        <Suspense fallback={<FullPageSpinner />}>
         <Routes>
           <Route path="/" element={<RootRoute />} />
           <Route path="/prisijungti" element={<Login />} />
@@ -183,6 +189,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </AuthProvider>
       </ThemeProvider>
       </ErrorBoundary>

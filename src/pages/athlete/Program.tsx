@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ExerciseInfoDialog, ExerciseThumb, useExerciseCatalog } from '@/components/exercise/ExerciseInfo'
+import { RestTimer } from '@/components/RestTimer'
+import { Input } from '@/components/ui/input'
 import { motion } from 'framer-motion'
 import { ClipboardList, History, Link2Off } from 'lucide-react'
 import { toast } from 'sonner'
@@ -27,6 +30,12 @@ export function AthleteProgram() {
   const [logs, setLogs] = useState<ExerciseLog[]>([])
   const [loading, setLoading] = useState(true)
   const [historyFor, setHistoryFor] = useState<ProgramExercise | null>(null)
+  const [infoName, setInfoName] = useState<string | null>(null)
+  const [rest, setRest] = useState<{ seconds: number; label: string; startedAt: number } | null>(null)
+  /** Šiandien keliamas svoris, jei skiriasi nuo trenerio nurodyto. */
+  const [weights, setWeights] = useState<Record<string, string>>({})
+  const catalog = useExerciseCatalog()
+  const stopRest = useCallback(() => setRest(null), [])
 
   const today = toDateKey(new Date())
 
@@ -55,6 +64,13 @@ export function AthleteProgram() {
     return map
   }, [logs])
 
+  const weightFor = (exercise: ProgramExercise) => {
+    const raw = weights[exercise.id]
+    if (raw == null || raw.trim() === '') return exercise.weightKg ?? null
+    const parsed = Number(raw.replace(',', '.'))
+    return Number.isFinite(parsed) ? parsed : exercise.weightKg ?? null
+  }
+
   const toggleSet = async (exercise: ProgramExercise, setNumber: number) => {
     if (!athlete) return
     const done = doneBySet.get(exercise.id) ?? 0
@@ -77,8 +93,14 @@ export function AthleteProgram() {
             programExerciseId: exercise.id,
             performedOn: today,
             setNumber: n,
-            weightKg: exercise.weightKg ?? null,
+            weightKg: weightFor(exercise),
           })
+        }
+        // Poilsis tik tarp serijų: po paskutinės jo nebereikia.
+        if (setNumber < exercise.sets) {
+          setRest({ seconds: exercise.restSeconds ?? 90, label: `${setNumber} serija`, startedAt: Date.now() })
+        } else {
+          setRest(null)
         }
         if (setNumber < done) {
           await unmarkSetsFrom({
@@ -134,7 +156,7 @@ export function AthleteProgram() {
     <div>
       <PageHeader
         title={program.title}
-        subtitle={program.description ?? 'Pažymėtos serijos išsaugomos, perkrovus puslapį jos nedings.'}
+        subtitle={program.description ?? 'Paspauskite pratimą, kad pamatytumėte, kaip jį atlikti. Pažymėjus seriją, prasideda poilsio laikmatis.'}
       />
 
       <Tabs defaultValue={program.days[0].id}>
@@ -156,10 +178,20 @@ export function AthleteProgram() {
                 return (
                   <motion.div key={exercise.id} variants={riseItem} className="panel p-4">
                     <div className="flex items-start gap-3">
-                      <span className="mono mt-0.5 w-5 shrink-0 text-xs text-muted-foreground">{index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => setInfoName(exercise.name)}
+                        aria-label={`${exercise.name}: kaip atlikti`}
+                        className="relative shrink-0"
+                      >
+                        <ExerciseThumb item={catalog.ready ? catalog.find(exercise.name) : null} className="h-14 w-[4.5rem]" />
+                        <span className="absolute -left-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full border border-border bg-card text-[10px] tabular-nums text-muted-foreground">{index + 1}</span>
+                      </button>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">{exercise.name}</p>
+                        <button type="button" onClick={() => setInfoName(exercise.name)} className="text-left font-medium text-foreground hover:text-primary">
+                          {exercise.name}
+                        </button>
                         <p className="mono mt-1 text-xs text-muted-foreground">
                           {exercise.sets} × {exercise.reps}
                           {exercise.weightKg != null && ` · ${exercise.weightKg} kg`}
@@ -177,7 +209,18 @@ export function AthleteProgram() {
                       </button>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2 pl-8">
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="sr-only">Svoris šiandien, kg</span>
+                        <Input
+                          inputMode="decimal"
+                          value={weights[exercise.id] ?? (exercise.weightKg != null ? String(exercise.weightKg) : '')}
+                          onChange={(e) => setWeights((w) => ({ ...w, [exercise.id]: e.target.value }))}
+                          placeholder="kg"
+                          className="h-9 w-16 px-2 text-center text-xs tabular-nums"
+                        />
+                        kg
+                      </label>
                       {Array.from({ length: exercise.sets }, (_, i) => {
                         const number = i + 1
                         const filled = number <= done
@@ -219,6 +262,19 @@ export function AthleteProgram() {
       </Tabs>
 
       <HistoryDialog exercise={historyFor} athleteId={athlete.id} onClose={() => setHistoryFor(null)} />
+
+      <ExerciseInfoDialog
+        name={infoName}
+        item={infoName ? catalog.find(infoName) : null}
+        onClose={() => setInfoName(null)}
+      />
+
+      <RestTimer
+        seconds={rest?.seconds ?? 0}
+        label={rest?.label ?? ''}
+        startedAt={rest?.startedAt ?? null}
+        onDone={stopRest}
+      />
     </div>
   )
 }

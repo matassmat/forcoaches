@@ -4,7 +4,7 @@ import { Apple, ChevronLeft, ChevronRight, ImageOff, Link2Off, Pencil, Plus, Tra
 import { toast } from 'sonner'
 import { useAthleteContext } from '@/hooks/useAthleteContext'
 import {
-  addFoodLog, deleteFoodLog, getAthleteMealPlan, listFoodLog, MEAL_SLOTS, MEAL_SLOT_LABELS,
+  addFoodLog, copyFoodLogDay, deleteFoodLog, getAthleteMealPlan, listFoodLog, MEAL_SLOTS, MEAL_SLOT_LABELS,
   sumMacros,
 } from '@/lib/nutrition'
 import { addDays, formatDateLt, toDateKey } from '@/lib/time'
@@ -31,6 +31,7 @@ export function AthleteNutrition() {
   const [date, setDate] = useState(toDateKey(new Date()))
   const [loading, setLoading] = useState(true)
   const [addSlot, setAddSlot] = useState<MealSlot | null>(null)
+  const [copying, setCopying] = useState(false)
 
   const load = useCallback(async () => {
     if (!athlete) return
@@ -167,6 +168,31 @@ export function AthleteNutrition() {
         </div>
       </div>
 
+      {entries.length === 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-border px-4 py-3">
+          <p className="text-sm text-muted-foreground">Valgote panašiai kaip vakar?</p>
+          <Button
+            variant="outline"
+            size="sm"
+            loading={copying}
+            onClick={async () => {
+              setCopying(true)
+              try {
+                const copied = await copyFoodLogDay(athlete.id, toDateKey(addDays(new Date(date), -1)), date)
+                if (copied.length === 0) toast('Ankstesnę dieną nieko nepažymėta')
+                else { setEntries(copied); toast.success(`Nukopijuota įrašų: ${copied.length}`) }
+              } catch (e) {
+                toast.error(errorMessage(e, 'Nepavyko nukopijuoti'))
+              } finally {
+                setCopying(false)
+              }
+            }}
+          >
+            Kartoti ankstesnę dieną
+          </Button>
+        </div>
+      )}
+
       {/* Valgiai pagal dienos metą */}
       <motion.div variants={staggerParent} initial="hidden" animate="visible" className="space-y-4">
         {MEAL_SLOTS.map((slot) => {
@@ -179,7 +205,7 @@ export function AthleteNutrition() {
               <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-5 py-3">
                 <h2 className="flex-1 text-base text-foreground">{MEAL_SLOT_LABELS[slot]}</h2>
                 {slotKcal > 0 && <span className="mono text-xs text-foreground">{slotKcal} kcal</span>}
-                <Button variant="ghost" size="sm" onClick={() => setAddSlot(slot)}>
+                <Button variant="ghost" size="sm" onClick={() => setAddSlot(slot)} aria-label={`Pridėti: ${MEAL_SLOT_LABELS[slot]}`}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

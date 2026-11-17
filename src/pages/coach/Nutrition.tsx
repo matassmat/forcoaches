@@ -213,7 +213,7 @@ function PlanEditor({ planId, onBack }: { planId: string; onBack: () => void }) 
             <motion.section key={slot} variants={riseItem} className="panel overflow-hidden">
               <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-5 py-3">
                 <h2 className="flex-1 text-base text-foreground">{MEAL_SLOT_LABELS[slot]}</h2>
-                <Button variant="ghost" size="sm" onClick={() => setAddSlot(slot)}>
+                <Button variant="ghost" size="sm" onClick={() => setAddSlot(slot)} aria-label={`Pridėti: ${MEAL_SLOT_LABELS[slot]}`}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

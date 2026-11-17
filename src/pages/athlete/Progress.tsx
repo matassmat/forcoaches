@@ -3,6 +3,7 @@ import { useAthleteContext } from '@/hooks/useAthleteContext'
 import { EmptyPanel } from '@/components/EmptyPanel'
 import { MeasurementsPanel } from '@/components/MeasurementsPanel'
 import { PageHeader } from '@/components/PageHeader'
+import { StrengthRecords } from '@/components/StrengthRecords'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export function AthleteProgress() {
@@ -12,7 +13,7 @@ export function AthleteProgress() {
     <div>
       <PageHeader
         title="Progresas"
-        subtitle="Svoris, riebalų procentas ir apimtys. Pildyti visų laukų nebūtina."
+        subtitle="Kūno matavimai ir jėgos rekordai. Pildyti visų matavimų laukų nebūtina."
       />
 
       {loading ? (
@@ -24,7 +25,10 @@ export function AthleteProgress() {
           text="Registruojantis nebuvo panaudotas pakvietimo kodas. Paprašykite trenerio naujo kodo."
         />
       ) : (
-        <MeasurementsPanel athleteId={athlete.id} />
+        <>
+          <MeasurementsPanel athleteId={athlete.id} />
+          <StrengthRecords athleteId={athlete.id} />
+        </>
       )}
     </div>
   )

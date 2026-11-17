@@ -5,6 +5,7 @@ import { deleteAthlete, updateAthlete } from '@/lib/athletes'
 import { listAthletePrograms } from '@/lib/programs'
 import { CopyButton } from '@/components/CopyButton'
 import { MeasurementsPanel } from '@/components/MeasurementsPanel'
+import { StrengthRecords } from '@/components/StrengthRecords'
 import { PageHeader } from '@/components/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -170,6 +171,7 @@ export function AthleteDetail({
 
         <TabsContent value="progress">
           <MeasurementsPanel athleteId={athlete.id} />
+          <StrengthRecords athleteId={athlete.id} />
         </TabsContent>
       </Tabs>
 
