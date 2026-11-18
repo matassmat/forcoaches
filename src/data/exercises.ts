@@ -33,6 +33,8 @@ export interface Exercise {
   /** Keliai formatu „Barbell_Squat/0.jpg“. */
   images: string[]
   instructions: string[]
+  /** Lietuviškas aprašymas dažniausiems pratimams. */
+  instructionsLt?: string[]
 }
 
 export const MUSCLE_LABELS: Record<MuscleGroup, string> = {

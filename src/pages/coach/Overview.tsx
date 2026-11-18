@@ -21,7 +21,14 @@ const shortcuts: Shortcut[] = [
   { to: '/treneris/mityba', icon: Salad, title: 'Mityba', text: 'Kalorijų normos ir valgiaraščiai' },
 ]
 
+interface TodayItem { id: string; time: string; name: string; status: string; location: string | null }
+
+const STATUS_TEXT: Record<string, string> = {
+  pending: 'Laukia patvirtinimo', confirmed: 'Patvirtinta', completed: 'Įvyko', no_show: 'Neatvyko', cancelled: 'Atšaukta',
+}
+
 interface Summary {
+  today: TodayItem[]
   athletes: number
   pendingRequests: number
   nextSession: string | null
@@ -49,6 +56,16 @@ export function CoachOverview() {
         .sort((a, b) => (a.sessionDate + a.startTime).localeCompare(b.sessionDate + b.startTime))[0]
 
       setSummary({
+        today: bookings
+          .filter((b) => b.sessionDate === today && b.status !== 'cancelled')
+          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+          .map((b) => ({
+            id: b.id,
+            time: `${b.startTime.slice(0, 5)}-${b.endTime.slice(0, 5)}`,
+            name: b.athleteName,
+            status: b.status,
+            location: b.location ?? null,
+          })),
         athletes: athletes.filter((a) => a.status === 'active').length,
         pendingRequests: bookings.filter((b) => b.status === 'pending').length,
         nextSession: upcoming
@@ -97,6 +114,33 @@ export function CoachOverview() {
             to="/treneris/finansai"
           />
         </motion.div>
+      )}
+
+      {summary && (
+        <section className="mb-8">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-lg text-foreground">Šiandien</h2>
+            <Link to="/treneris/kalendorius" className="text-sm text-muted-foreground hover:text-foreground">Kalendorius</Link>
+          </div>
+          {summary.today.length === 0 ? (
+            <p className="panel px-5 py-4 text-sm text-muted-foreground">Šiandien treniruočių nėra.</p>
+          ) : (
+            <ul className="panel divide-y divide-border">
+              {summary.today.map((item) => (
+                <li key={item.id} className="flex items-center gap-4 px-5 py-3">
+                  <span className="w-24 shrink-0 text-sm tabular-nums text-foreground">{item.time}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-foreground">{item.name}</span>
+                    {item.location && <span className="block truncate text-xs text-muted-foreground">{item.location}</span>}
+                  </span>
+                  <span className={cn('shrink-0 text-xs', item.status === 'pending' ? 'text-primary' : 'text-muted-foreground')}>
+                    {STATUS_TEXT[item.status] ?? item.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
 
       <ShortcutGrid items={shortcuts} />

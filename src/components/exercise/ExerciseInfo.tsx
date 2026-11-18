@@ -122,18 +122,25 @@ export function ExerciseInfo({ item }: { item: AnyExercise }) {
         </div>
       )}
 
-      {lib && lib.instructions.length > 0 && (
+      {lib?.instructionsLt && lib.instructionsLt.length > 0 && (
         <div>
-          <p className="eyebrow mb-2">Kaip atlikti <span className="text-muted-foreground/70">(aprašymas anglų kalba)</span></p>
-          <ol className="space-y-2">
-            {lib.instructions.map((step, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground" lang="en">
-                <span className="mt-0.5 w-4 shrink-0 text-xs tabular-nums text-foreground">{i + 1}</span>
-                {step}
-              </li>
-            ))}
-          </ol>
+          <p className="eyebrow mb-2">Kaip atlikti</p>
+          <Steps steps={lib.instructionsLt} />
         </div>
+      )}
+
+      {lib && lib.instructions.length > 0 && (
+        lib.instructionsLt?.length ? (
+          <details className="group text-sm">
+            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Originalus aprašymas anglų kalba</summary>
+            <div className="mt-2" lang="en"><Steps steps={lib.instructions} /></div>
+          </details>
+        ) : (
+          <div>
+            <p className="eyebrow mb-2">Kaip atlikti <span className="text-muted-foreground/70">(aprašymas anglų kalba)</span></p>
+            <div lang="en"><Steps steps={lib.instructions} /></div>
+          </div>
+        )
       )}
 
       {!videoId && (
@@ -186,5 +193,18 @@ export function ExerciseInfoDialog({
         ) : <Skeleton className="h-64 w-full" />}
       </DialogContent>
     </Dialog>
+  )
+}
+
+function Steps({ steps }: { steps: string[] }) {
+  return (
+    <ol className="space-y-2">
+      {steps.map((step, i) => (
+        <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+          <span className="mt-0.5 w-4 shrink-0 text-xs tabular-nums text-foreground">{i + 1}</span>
+          {step}
+        </li>
+      ))}
+    </ol>
   )
 }
