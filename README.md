@@ -140,6 +140,9 @@ Paleisti iš eilės Supabase SQL Editor:
 | 8 | `20260817220000_reminders.sql` | Priminimų žyma |
 | 9 | `20261118120000_rate_limits.sql` | Prisijungimo, pakvietimo kodų ir įrašų kūrimo ribos |
 | 10 | `20261118130000_contact_messages.sql` | Kontaktų formos žinutės |
+| 11 | `20261118140000_custom_exercises.sql` | Trenerio savi pratimai |
+| 12 | `20261118150000_delete_account.sql` | Paskyros ištrynimas, rolės apsauga |
+| 13 | `20261118160000_athlete_permissions.sql` | Sportininko teisės, atšaukimas per funkciją |
 
 ## Priminimai el. paštu
 

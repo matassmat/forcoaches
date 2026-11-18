@@ -38,6 +38,7 @@ const AthleteProgress = lazy(() => import('@/pages/athlete/Progress').then((m) =
 const AthleteFinances = lazy(() => import('@/pages/athlete/Finances').then((m) => ({ default: m.AthleteFinances })))
 const AthleteProgram = lazy(() => import('@/pages/athlete/Program').then((m) => ({ default: m.AthleteProgram })))
 const AthleteNutrition = lazy(() => import('@/pages/athlete/Nutrition').then((m) => ({ default: m.AthleteNutrition })))
+const AthleteAccount = lazy(() => import('@/pages/athlete/Account').then((m) => ({ default: m.AthleteAccount })))
 const AthleteOverview = lazy(() => import('@/pages/athlete/Overview').then((m) => ({ default: m.AthleteOverview })))
 const Privacy = lazy(() => import('@/pages/site/Privacy').then((m) => ({ default: m.Privacy })))
 const CaseStudies = lazy(() => import('@/pages/site/CaseStudies').then((m) => ({ default: m.CaseStudies })))
@@ -64,6 +65,7 @@ const athleteNav: NavItem[] = [
   { to: '/sportininkas/programa', label: 'Programa', icon: ClipboardList },
   { to: '/sportininkas/mityba', label: 'Mityba', icon: Salad },
   { to: '/sportininkas/atsiskaitymai', label: 'Atsiskaitymai', icon: Coins },
+  { to: '/sportininkas/paskyra', label: 'Paskyra', icon: Settings },
 ]
 
 /**
@@ -185,6 +187,7 @@ export default function App() {
             <Route path="programa" element={<AthleteProgram />} />
             <Route path="mityba" element={<AthleteNutrition />} />
             <Route path="atsiskaitymai" element={<AthleteFinances />} />
+            <Route path="paskyra" element={<AthleteAccount />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

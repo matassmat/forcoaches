@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { getCoachProfile, updateCoachProfile } from '@/lib/coachProfile'
-import { supabase } from '@/lib/supabase'
+import { AccountPanel } from '@/components/AccountPanel'
 import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,19 +70,6 @@ export function CoachSettings() {
     }
   }
 
-  const handlePasswordReset = async () => {
-    if (!user) return
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: window.location.origin,
-      })
-      if (error) throw error
-      toast.success('Slaptažodžio keitimo nuoroda išsiųsta į el. paštą')
-    } catch (err) {
-      toast.error(errorMessage(err, 'Nepavyko išsiųsti nuorodos'))
-    }
-  }
-
   if (loading) return <Skeleton className="h-96 w-full" />
 
   return (
@@ -134,16 +121,13 @@ export function CoachSettings() {
           </p>
         </section>
 
-        <section className="panel p-6">
-          <p className="eyebrow mb-5">Paskyra</p>
-          <p className="mb-4 text-sm text-muted-foreground">{user?.email}</p>
-          <Button type="button" variant="outline" onClick={handlePasswordReset}>
-            Keisti slaptažodį
-          </Button>
-        </section>
-
         <Button type="submit" size="lg" loading={saving}>Išsaugoti</Button>
       </form>
+
+      <div className="mt-10 max-w-2xl">
+        <h2 className="mb-4 text-lg text-foreground">Paskyra</h2>
+        <AccountPanel />
+      </div>
     </div>
   )
 }

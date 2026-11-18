@@ -4,9 +4,10 @@ import { CalendarClock, CalendarX, Link2Off } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAthleteContext } from '@/hooks/useAthleteContext'
 import {
-  bookableWindows, listSlots, restoreSlotRange, type BookableWindow,
+  bookableWindows, listSlots, type BookableWindow,
 } from '@/lib/availability'
-import { createBooking, listAthleteBookings, listCoachBookings, setBookingStatus } from '@/lib/booking'
+import { createBooking, listAthleteBookings, listCoachBookings } from '@/lib/booking'
+import { supabase } from '@/lib/supabase'
 import { formatDateLt, hoursUntil, toDateKey } from '@/lib/time'
 import { notify } from '@/hooks/useNotifications'
 import { enter, exit, riseItem, staggerParent } from '@/lib/motion'
@@ -91,7 +92,7 @@ export function AthleteBookings() {
         sessionDate: window.dateKey,
         startTime: window.startTime,
         endTime: window.endTime,
-        price: coach?.defaultSessionPrice || null,
+        price: athlete.sessionPrice ?? coach?.defaultSessionPrice ?? null,
       })
       setBookings((list) => [created, ...list])
       setWindows((list) => list.filter((w) => `${w.dateKey}${w.startTime}` !== key))
@@ -121,12 +122,10 @@ export function AthleteBookings() {
     }
     setBusy(target.id)
     try {
-      await setBookingStatus(target.id, 'cancelled', { cancelledBy: 'athlete' })
-      // Patvirtinta treniruotė jau buvo iškirpta iš laisvų langų, laiką
-      // grąžinam atgal ir sujungiam su gretimais.
-      if (target.status === 'confirmed') {
-        await restoreSlotRange(athlete.coachId, target.sessionDate, target.startTime, target.endTime)
-      }
+      // Atšaukimą, termino patikrą ir laiko grąžinimą į laisvus atlieka
+      // duomenų bazės funkcija: sportininkas pats trenerio laikų keisti negali.
+      const { error } = await supabase.rpc('cancel_my_booking', { p_booking_id: target.id })
+      if (error) throw error
       await notify({
         userId: athlete.coachId,
         type: 'booking_cancelled',
