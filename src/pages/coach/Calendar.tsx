@@ -167,7 +167,7 @@ export function CoachCalendar() {
       endTime: b.endTime,
       type: b.status === 'pending' ? ('request' as const) : ('session' as const),
       label: b.athleteName,
-      sub: b.location ?? `${b.startTime}–${b.endTime}`,
+      sub: b.location ?? `${b.startTime}-${b.endTime}`,
       tone: toneForStatus[b.status],
     })),
   ], [slots, bookings])
@@ -220,7 +220,7 @@ export function CoachCalendar() {
         until: dateTo,
       })
       await mergeAdjacentSlots(user.id, dateFrom)
-      toast.success(count > 1 ? `Pridėta ${count} laisvų laikų` : `Laisva ${startTime}–${endTime}`)
+      toast.success(count > 1 ? `Pridėta ${count} laisvų laikų` : `Laisva ${startTime}-${endTime}`)
       await load()
     } catch (e) {
       toast.error(errorMessage(e, 'Nepavyko pridėti'))
@@ -740,7 +740,7 @@ function NewSessionDialog({
         <DialogHeader>
           <DialogTitle>Nauja treniruotė</DialogTitle>
           <DialogDescription>
-            {formatDateLt(draft.date)} · {draft.startTime}–{draft.endTime}
+            {formatDateLt(draft.date)} · {draft.startTime}-{draft.endTime}
             {toMinutes(draft.endTime) - toMinutes(draft.startTime) !== sessionMinutes &&
               ` (numatyta ${sessionMinutes} min.)`}
           </DialogDescription>

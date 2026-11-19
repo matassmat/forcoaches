@@ -78,7 +78,7 @@ export function CoachBookings() {
           userId: athleteUserId,
           type: 'booking_confirmed',
           title: 'Treniruotė patvirtinta',
-          message: `${formatDateLt(request.sessionDate)} · ${request.startTime}–${request.endTime}`,
+          message: `${formatDateLt(request.sessionDate)} · ${request.startTime}-${request.endTime}`,
         })
       }
 
@@ -111,7 +111,7 @@ export function CoachBookings() {
           type: 'booking_rejected',
           title: 'Prašymas atmestas',
           message: [
-            `${formatDateLt(request.sessionDate)} · ${request.startTime}–${request.endTime}`,
+            `${formatDateLt(request.sessionDate)} · ${request.startTime}-${request.endTime}`,
             reason.trim(),
           ].filter(Boolean).join(', '),
         })
@@ -296,7 +296,7 @@ function BookingCard({
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-foreground">{booking.athleteName}</p>
         <p className="mono mt-1 text-xs text-muted-foreground">
-          {formatDateLt(booking.sessionDate)} · {booking.startTime}–{booking.endTime}
+          {formatDateLt(booking.sessionDate)} · {booking.startTime}-{booking.endTime}
         </p>
         {(booking.location || booking.price != null) && (
           <p className="mono mt-1 flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">

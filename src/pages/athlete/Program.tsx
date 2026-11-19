@@ -160,7 +160,7 @@ export function AthleteProgram() {
       />
 
       <Tabs defaultValue={program.days[0].id}>
-        <TabsList className="mb-6 flex-wrap">
+        <TabsList className="mb-6 h-auto flex-wrap">
           {program.days.map((day) => (
             <TabsTrigger key={day.id} value={day.id}>{day.title}</TabsTrigger>
           ))}

@@ -32,7 +32,7 @@ export function FinanceCharts({ records }: { records: FinRecordWithAthlete[] }) 
         <p className="eyebrow mb-4">Paskutiniai 6 mėnesiai</p>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthly} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+            <BarChart data={monthly} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="name"
@@ -44,7 +44,7 @@ export function FinanceCharts({ records }: { records: FinRecordWithAthlete[] }) 
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                width={44}
+                width={48}
               />
               <Tooltip
                 cursor={{ fill: 'hsl(var(--muted) / 0.5)' }}

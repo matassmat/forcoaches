@@ -39,6 +39,7 @@ export function MeasurementChart({
             // domain su atsarga, kitaip kreivė lipa prie pat kraštų.
             domain={['dataMin - 1', 'dataMax + 1']}
             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+            tickFormatter={(v: number) => (Math.round(v * 10) / 10).toLocaleString('lt-LT')}
             tickLine={false}
             axisLine={false}
             width={44}

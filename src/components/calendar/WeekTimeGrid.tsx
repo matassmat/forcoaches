@@ -246,7 +246,7 @@ export function WeekTimeGrid({
                 }}
               >
                 <p className="mono px-1.5 pt-1 text-[11px] font-medium leading-tight" style={{ color: previewTone.text }}>
-                  {preview.startT}–{preview.endT}
+                  {preview.startT}-{preview.endT}
                   {preview.dates.length > 1 && dateStr === preview.dates[0] && (
                     <span className="block opacity-80">{preview.dates.length} d.</span>
                   )}
@@ -267,7 +267,7 @@ export function WeekTimeGrid({
                 }}
               >
                 <p className="mono px-1.5 pt-1 text-[11px] font-medium leading-tight text-foreground">
-                  {dropPreview.startT}–{dropPreview.endT}
+                  {dropPreview.startT}-{dropPreview.endT}
                 </p>
               </div>
             )}

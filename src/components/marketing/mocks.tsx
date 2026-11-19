@@ -46,7 +46,7 @@ export function MockSession({ className }: { className?: string }) {
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-foreground/10 text-xs font-medium">MK</span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm text-foreground">Marius Kazlauskas</p>
-          <p className="truncate text-xs text-muted-foreground">Šiandien 18:00–19:00 · Ozo g. salė</p>
+          <p className="truncate text-xs text-muted-foreground">Šiandien 18:00-19:00 · Ozo g. salė</p>
         </div>
         <span className="text-xs tabular-nums text-muted-foreground">8 iš 14 serijų</span>
       </div>
@@ -108,10 +108,10 @@ export function MockWeek({ className }: { className?: string }) {
 }
 
 const slots = [
-  { time: '07:00–08:00', label: 'Marius K.', taken: true },
-  { time: '08:00–09:00', label: 'Laisva', taken: false },
-  { time: '10:00–11:00', label: 'Gabija P.', taken: true },
-  { time: '11:00–12:00', label: 'Laisva', taken: false },
+  { time: '07:00-08:00', label: 'Marius K.', taken: true },
+  { time: '08:00-09:00', label: 'Laisva', taken: false },
+  { time: '10:00-11:00', label: 'Gabija P.', taken: true },
+  { time: '11:00-12:00', label: 'Laisva', taken: false },
 ]
 
 /** Rezervacijų langai vienai dienai. */

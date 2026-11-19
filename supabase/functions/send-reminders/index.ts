@@ -81,7 +81,7 @@ Deno.serve(async (req: Request) => {
     if (!to) { skipped.push(booking.id); continue }
 
     const coach = [booking.users?.first_name, booking.users?.last_name].filter(Boolean).join(' ')
-    const time = `${booking.start_time.slice(0, 5)}–${booking.end_time.slice(0, 5)}`
+    const time = `${booking.start_time.slice(0, 5)}-${booking.end_time.slice(0, 5)}`
 
     const response = await fetch(RESEND_ENDPOINT, {
       method: 'POST',

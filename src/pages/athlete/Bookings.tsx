@@ -292,7 +292,7 @@ function BookingRow({
       className="flex flex-wrap items-center gap-3 p-4"
     >
       <span className="mono w-24 shrink-0 text-sm text-foreground">
-        {booking.startTime}–{booking.endTime}
+        {booking.startTime}-{booking.endTime}
       </span>
       <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
         {formatDateLt(booking.sessionDate)}

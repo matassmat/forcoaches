@@ -171,7 +171,7 @@ export function MeasurementsPanel({ athleteId, canEdit = true }: { athleteId: st
                   </td>
                   {MEASURE_FIELDS.map((f) => (
                     <td key={f.key} className="mono px-3 py-3 text-right text-foreground">
-                      {m[f.key] != null ? Number(m[f.key]) : '·'}
+                      {m[f.key] != null ? Number(m[f.key]).toLocaleString('lt-LT') : '·'}
                     </td>
                   ))}
                   {canEdit && (
