@@ -9,8 +9,9 @@ export function ConfigWarning() {
     <div className="flex items-center justify-center gap-2 border-b border-border bg-muted px-4 py-2 text-center text-sm text-foreground">
       <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
       <span>
-        Supabase raktai nenustatyti, prisijungimas neveiks. Nukopijuokite{' '}
-        <code className="font-mono">.env.example</code> į <code className="font-mono">.env</code>.
+        Supabase raktai nenustatyti, prisijungimas neveiks. Įrašykite{' '}
+        <code className="font-mono">VITE_SUPABASE_URL</code> ir <code className="font-mono">VITE_SUPABASE_ANON_KEY</code>{' '}
+        į <code className="font-mono">.env</code> (vietoje) arba hostingo aplinkos kintamuosius (Vercel) ir perdiekite.
       </span>
     </div>
   )
